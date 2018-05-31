@@ -18,7 +18,7 @@ def load(image_path):
 
     ### YOUR CODE HERE
     # Use skimage io.imread
-    pass
+    out = io.imread(image_path)
     ### END YOUR CODE
 
     return out
@@ -38,7 +38,7 @@ def change_value(image):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    out = image**2/2
     ### END YOUR CODE
 
     return out
@@ -56,7 +56,7 @@ def convert_to_grey_scale(image):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    out = np.mean(image, axis=2)
     ### END YOUR CODE
 
     return out
@@ -75,7 +75,18 @@ def rgb_decomposition(image, channel):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    colors = {"R":0, "G":1, "B":2}
+    out = np.zeros_like(image)
+    if channel == "R":
+        out[:,:,1] = image[:,:,1]
+        out[:,:,2] = image[:,:,2]
+    if channel == "G":
+        out[:,:,0] = image[:,:,0]
+        out[:,:,2] = image[:,:,2]
+    if channel == "B":
+        out[:,:,0] = image[:,:,0]
+        out[:,:,1] = image[:,:,1]
+
     ### END YOUR CODE
 
     return out
@@ -95,7 +106,7 @@ def lab_decomposition(image, channel):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    out = np.zeros_like(image)
     ### END YOUR CODE
 
     return out

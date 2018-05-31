@@ -21,7 +21,7 @@ def hog_feature(image, pixel_per_cell = 8):
         hogImage: an image representation of hog provided by skimage
     '''
     ### YOUR CODE HERE
-    pass
+    hogFeature, hogImage = feature.hog(image, pixels_per_cell=(pixel_per_cell,pixel_per_cell), visualise=True)
     ### END YOUR CODE
     return (hogFeature, hogImage)
 
@@ -42,17 +42,29 @@ def sliding_window(image, base_score, stepSize, windowSize, pixel_per_cell=8):
         max_score: float of the highest hog score 
         maxr: int of row where the max_score is found
         maxc: int of column where the max_score is found
-        response_map: an np array of size (h,w)
+        response_map: an np array of size (h,w) - ????
     '''
     # slide a window across the image
     (max_score, maxr, maxc) = (0,0,0)
+    print(windowSize)
     winH, winW = windowSize
     H,W = image.shape
     pad_image = np.lib.pad(image, ((winH//2,winH-winH//2),(winW//2, winW-winW//2)), mode='constant')
     response_map = np.zeros((H//stepSize+1, W//stepSize+1))
+    print(response_map.shape)
     
     ### YOUR CODE HERE
-    pass
+    for i in range(0, H + 1, stepSize):
+        for j in range(0, W + 1, stepSize):
+            window = pad_image[i:i + winH, j:j + winW]
+            hogFeature, _ = hog_feature(window, pixel_per_cell)
+#             score = np.dot(hogFeature.T, base_score)
+            score = np.dot(hogFeature.T, base_score)
+            response_map[i//stepSize, j//stepSize] = score
+            if score > max_score:
+                max_score = score
+                maxr = i - winH//2
+                maxc = j - winW//2
     ### END YOUR CODE
     
     
@@ -81,7 +93,11 @@ def pyramid(image, scale=0.9, minSize=(200, 100)):
     images.append((current_scale, image))
     # keep looping over the pyramid
     ### YOUR CODE HERE
-    pass
+    img = image.copy()
+    while np.all(img.shape >= minSize):
+        current_scale *= scale
+        img = rescale(image, current_scale)
+        images.append((current_scale, img))
     ### END YOUR CODE
     return images
 
@@ -108,7 +124,14 @@ def pyramid_score(image,base_score, shape, stepSize=20, scale = 0.9, pixel_per_c
     max_response_map =np.zeros(image.shape)
     images = pyramid(image, scale)
     ### YOUR CODE HERE
-    pass
+    for current_scale, img in images:
+        (score, row, col, response_map) = sliding_window(img, base_score, stepSize, shape, pixel_per_cell=pixel_per_cell)
+        if score > max_score:
+            max_score = score
+            max_scale = current_scale
+            maxr = row
+            maxc = col
+            max_response_map = response_map
     ### END YOUR CODE
     return max_score, maxr, maxc, max_scale, max_response_map
 

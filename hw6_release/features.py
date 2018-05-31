@@ -17,7 +17,7 @@ class PCA(object):
         self.mean = None
 
     def fit(self, X, method='svd'):
-        """Fit the training data X using the chosen method.
+        """Fit the training data X using the chosen method.num_values
 
         Will store the projection matrix in self.W_pca and the mean of the data in self.mean
 
@@ -33,7 +33,9 @@ class PCA(object):
         # YOUR CODE HERE
         # 1. Compute the mean and store it in self.mean
         # 2. Apply either method to `X_centered`
-        pass
+        self.mean = np.mean(X, axis=0)
+        X_centered = X - self.mean
+        self.W_pca, _ = self._eigen_decomp(X_centered)
         # END YOUR CODE
 
         # Make sure that X_centered has mean zero
@@ -71,7 +73,12 @@ class PCA(object):
         #     1. compute the covariance matrix of X, of shape (D, D)
         #     2. compute the eigenvalues and eigenvectors of the covariance matrix
         #     3. Sort both of them in decreasing order (ex: 1.0 > 0.5 > 0.0 > -0.2 > -1.2)
-        pass
+        cov = np.cov(X.T)
+        e_vals, e_vecs = np.linalg.eig(cov)
+        idx = np.flip(np.argsort(e_vals), axis=0)
+        e_vals = e_vals[idx]
+        e_vecs = e_vecs[:, idx]
+        
         # END YOUR CODE
 
         # Check the output shapes
@@ -96,7 +103,7 @@ class PCA(object):
         # YOUR CODE HERE
         # Here, compute the SVD of X
         # Make sure to return vecs as the matrix of vectors where each column is a singular vector
-        pass
+        _, vals, vecs = np.linalg.svd(X)
         # END YOUR CODE
         assert vecs.shape == (D, D)
         K = min(N, D)
@@ -120,7 +127,8 @@ class PCA(object):
         # We need to modify X in two steps:
         #     1. first substract the mean stored during `fit`
         #     2. then project onto a subspace of dimension `n_components` using `self.W_pca`
-        pass
+        X_centered = X - self.mean
+        X_proj = np.dot(X_centered, self.W_pca[:,:n_components])
         # END YOUR CODE
 
         assert X_proj.shape == (N, n_components), "X_proj doesn't have the right shape"

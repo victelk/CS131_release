@@ -20,7 +20,10 @@ def energy_function(image):
     out = np.zeros((H, W))
 
     ### YOUR CODE HERE
-    pass
+    gray = color.rgb2gray(image)
+    g_x = np.gradient(gray, axis=1)
+    g_y = np.gradient(gray, axis=0)
+    out = np.abs(g_x) + np.abs(g_y)
     ### END YOUR CODE
 
     return out
@@ -62,7 +65,17 @@ def compute_cost(image, energy, axis=1):
     paths[0] = 0  # we don't care about the first row of paths
 
     ### YOUR CODE HERE
-    pass
+    for i in range(1,H):
+        cost[i,0] = energy[i,0] + min(cost[i-1,0], cost[i-1,1])
+        paths[i, 0] = np.argmin(cost[i-1,:2])
+#         min_cost_i_1 = np.min(np.vstack([cost[i-1,:-2],cost[i-1,1:-1],cost[i-1,2:]]),axis=0)
+#         paths[i,1:-1] = np.argmin(np.vstack([cost[i-1,:-2],cost[i-1,1:-1],cost[i-1,2:]]),axis=0) - 1
+        shifted_row = np.vstack([cost[i-1,:-2],cost[i-1,1:-1],cost[i-1,2:]])
+        min_pos = np.argmin(shifted_row,axis=0) 
+        paths[i,1:-1] = min_pos - 1
+        cost[i,1:-1] = energy[i,1:-1] + np.choose(min_pos,shifted_row)
+        cost[i,-1] = energy[i,-1] + min(cost[i-1,-2], cost[i-1,-1])
+        paths[i, -1] = np.argmin(cost[i-1,-2:]) - 1
     ### END YOUR CODE
 
     if axis == 0:
@@ -99,7 +112,8 @@ def backtrack_seam(paths, end):
     seam[H-1] = end
 
     ### YOUR CODE HERE
-    pass
+    for i in reversed(range(H-1)):
+        seam[i] = seam[i+1] + paths[i+1, seam[i+1]]
     ### END YOUR CODE
 
     # Check that seam only contains values in [0, W-1]
@@ -128,7 +142,12 @@ def remove_seam(image, seam):
     out = None
     H, W, C = image.shape
     ### YOUR CODE HERE
-    pass
+    # flat seam:
+    del_idx = np.arange(H) * W + seam
+    # flat image:
+    flat_img = image.reshape(-1,3)
+    flat_img = np.delete(flat_img, del_idx, axis=0)
+    out = flat_img.reshape(H, W-1, 3)
     ### END YOUR CODE
     out = np.squeeze(out)  # remove last dimension if C == 1
 
@@ -169,9 +188,15 @@ def reduce(image, size, axis=1, efunc=energy_function, cfunc=compute_cost):
     assert size > 0, "Size must be greater than zero"
 
     ### YOUR CODE HERE
-    pass
+    for i in range(W - size):
+        energy = efunc(out)
+        cost, paths = cfunc(out, energy)
+        end = np.argmin(cost[-1])
+        seam = backtrack_seam(paths, end)
+        out = remove_seam(out, seam)
     ### END YOUR CODE
 
+    print(out.shape)
     assert out.shape[1] == size, "Output doesn't have the right shape"
 
     if axis == 0:

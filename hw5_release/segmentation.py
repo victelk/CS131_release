@@ -36,9 +36,17 @@ def kmeans(features, k, num_iters=100):
 
     for n in range(num_iters):
         ### YOUR CODE HERE
-        pass
+        dists2 = np.square(centers).sum(axis=1) + np.square(features).sum(axis=1)[:,np.newaxis] - 2 * np.dot(features, centers.T)
+        new_assignments = np.argmin(dists2, axis=1)
+        if (new_assignments == assignments).all():
+            break
+        assignments = new_assignments
+        for m in range(k):
+            centers[m] = np.mean(features[assignments == m], axis=0)
+#             print(centers)
         ### END YOUR CODE
 
+#     print("Iteration number:", n)    
     return assignments
 
 def kmeans_fast(features, k, num_iters=100):
@@ -145,7 +153,7 @@ def color_features(img):
     features = np.zeros((H*W, C))
 
     ### YOUR CODE HERE
-    pass
+    features = img.reshape(-1, C)
     ### END YOUR CODE
 
     return features
@@ -173,7 +181,10 @@ def color_position_features(img):
     features = np.zeros((H*W, C+2))
 
     ### YOUR CODE HERE
-    pass
+    x = np.mgrid[:H, :W]
+    features = np.dstack([x[0], x[1], color[:,:,0], color[:,:,1], color[:,:,2]])
+    features = (features - np.mean(features, axis=(0,1))) / np.std(features, axis=(0,1))
+    features = features.reshape(-1, C + 2)
     ### END YOUR CODE
 
     return features
@@ -213,7 +224,7 @@ def compute_accuracy(mask_gt, mask):
 
     accuracy = None
     ### YOUR CODE HERE
-    pass
+    accuracy = np.sum(1 - np.logical_xor(mask_gt, mask)) / mask.size
     ### END YOUR CODE
 
     return accuracy

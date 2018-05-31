@@ -12,7 +12,7 @@ def dot_product(vector1, vector2):
     """
     out = None
     ### YOUR CODE HERE
-    pass
+    out = np.dot(vector1, vector2)
     ### END YOUR CODE
 
     return out
@@ -29,7 +29,7 @@ def matrix_mult(M, vector1, vector2):
     """
     out = None
     ### YOUR CODE HERE
-    pass
+    out = (vector1.T * vector2) * (M * vector1)
     ### END YOUR CODE
 
     return out
@@ -48,7 +48,7 @@ def svd(matrix):
     s = None
     v = None
     ### YOUR CODE HERE
-    pass
+    u, s, v = np.linalg.svd(matrix)
     ### END YOUR CODE
 
     return u, s, v
@@ -65,14 +65,16 @@ def get_singular_values(matrix, n):
     singular_values = None
     u, s, v = svd(matrix)
     ### YOUR CODE HERE
-    pass
+    assert n <= min(matrix.shape), "too many eignenvalues required"
+#     singular_values = np.sort(np.diagonal(s))[::-1][:n]
+    singular_values = np.diagonal(s)[:n]
     ### END YOUR CODE
     return singular_values
 
 def eigen_decomp(matrix):
     """ Implement Eigen Value Decomposition
     Args:
-        matrix: numpy matrix of shape (m, )
+        matrix: numpy matrix of shape (m,m)
 
     Returns:
         w: numpy array of shape (m, m) such that the column v[:,i] is the eigenvector corresponding to the eigenvalue w[i].
@@ -80,7 +82,7 @@ def eigen_decomp(matrix):
     w = None
     v = None
     ### YOUR CODE HERE
-    pass
+    v, w = np.linalg.eig(matrix) 
     ### END YOUR CODE
     return w, v
 
@@ -94,10 +96,16 @@ def get_eigen_values_and_vectors(matrix, num_values):
         eigen_values: array of shape (n)
         eigen_vectors: array of shape (m, n)
     """
+    print(matrix)
     w, v = eigen_decomp(matrix)
+    print(v)
     eigen_values = []
     eigen_vectors = []
     ### YOUR CODE HERE
-    pass
+    print(matrix.shape[0])
+    assert num_values <= matrix.shape[0], "too many eignenvalues required"
+    ind = np.argsort(v)[::-1][:num_values]
+    eigen_values = v[ind]
+    eigen_vectors = w[:, ind]
     ### END YOUR CODE
     return eigen_values, eigen_vectors
